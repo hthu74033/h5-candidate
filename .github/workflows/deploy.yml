@@ -17,11 +17,13 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
-      - run: npm ci --prefer-offline || npm install
+      - name: Install dependencies
+        run: npm install
 
-      - run: ./node_modules/.bin/vite build
+      - name: Build
+        run: npx vite build
 
       - uses: actions/upload-pages-artifact@v3
         with:
