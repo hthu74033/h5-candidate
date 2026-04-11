@@ -51,7 +51,7 @@
           <input v-model="basic.wechatId" type="text" placeholder="请输入微信号" class="flex-1 text-sm text-gray-800 placeholder-gray-300 border-none outline-none bg-transparent focus:ring-0" />
         </div>
         <!-- 祖籍 -->
-        <div class="flex items-center px-3 py-3.5 cursor-pointer hover:bg-brand-50/30 transition-colors rounded-xl mx-2" @click="showAreaPicker = true">
+        <div class="flex items-center px-3 py-3.5 cursor-pointer hover:bg-brand-50/30 transition-colors rounded-xl mx-2" @click="openAreaPicker">
           <label class="w-22 ml-1 text-sm text-gray-500 font-medium shrink-0">祖籍 <span class="text-rose-500">*</span></label>
           <div class="flex-1 text-sm outline-none bg-transparent" :class="basic.hometown ? 'text-gray-800 font-medium' : 'text-gray-300'">
             {{ basic.hometown || '请选择省市' }}
@@ -194,7 +194,15 @@
 <script setup lang="ts">
 import { ref, watch, onMounted } from 'vue'
 import { useFormStore } from '../../stores/form'
-import { areaList } from '@vant/area-data'
+
+// 懒加载 area-data（500KB），仅在弹窗打开时才加载
+const areaList = ref<any>({})
+async function loadAreaData() {
+  if (Object.keys(areaList.value).length === 0) {
+    const { areaList: data } = await import('@vant/area-data')
+    areaList.value = data
+  }
+}
 
 const formStore = useFormStore()
 const basic = formStore.basic
@@ -276,6 +284,11 @@ function onDateConfirm({ selectedValues }: { selectedValues: string[] }) {
 
 // 地区选择处理
 const showAreaPicker = ref(false)
+
+async function openAreaPicker() {
+  await loadAreaData()
+  showAreaPicker.value = true
+}
 
 function onAreaConfirm({ selectedOptions }: { selectedOptions: any[] }) {
   const province = selectedOptions[0]?.text || ''
